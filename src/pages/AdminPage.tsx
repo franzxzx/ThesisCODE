@@ -17,15 +17,15 @@ function AdminPage() {
         onLogoutClick={logout}
         onCreateAccountClick={() => setShowCreateAccount(true)}
       />
-      {/* Map area - Updated to account for navbar height */}
-      <div className="absolute top-20 left-4 right-4 bottom-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+      {/* Map area - Responsive layout with proper spacing for mobile */}
+      <div className="absolute top-16 sm:top-20 left-2 sm:left-4 right-2 sm:right-4 bottom-2 sm:bottom-4 bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-lg overflow-hidden">
         <MapContainer editable={true} routingEnabled={false} />
         <MapLegend />
       </div>
 
-      {/* Fixed overlay container - Admin controls only */}
+      {/* Fixed overlay container - Admin controls with responsive positioning */}
       <div className="pointer-events-none absolute inset-0 z-[1000]">
-        <div className="absolute left-6 bottom-16 flex flex-col space-y-3 pointer-events-auto">
+        <div className="absolute left-3 sm:left-6 bottom-12 sm:bottom-16 flex flex-col space-y-2 sm:space-y-3 pointer-events-auto">
           {/* Consolidate Report button */}
           <ConsolidateReportButton />
         </div>

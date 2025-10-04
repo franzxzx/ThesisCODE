@@ -1014,27 +1014,27 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
       {routingEnabled && (
         <>
           {routeInfo && (
-            <div className={`absolute top-4 right-4 p-4 rounded-xl shadow-xl border z-[1000] min-w-[200px] transition-colors duration-200 ${
+            <div className={`absolute top-2 sm:top-4 right-2 sm:right-4 p-3 sm:p-4 rounded-xl shadow-xl border z-[1000] min-w-[180px] sm:min-w-[200px] max-w-[280px] sm:max-w-none transition-colors duration-200 ${
               theme === 'dark' 
                 ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-600' 
                 : 'bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200'
             }`}>
-              <div className="flex items-center mb-3">
-                <div className={`w-3 h-3 rounded-full mr-2 ${
+              <div className="flex items-center mb-2 sm:mb-3">
+                <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-2 ${
                   theme === 'dark' ? 'bg-blue-400' : 'bg-blue-500'
                 }`}></div>
-                <h3 className={`text-sm font-semibold ${
+                <h3 className={`text-xs sm:text-sm font-semibold ${
                   theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
                 }`}>Route Information</h3>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {/* Distance */}
-                <div className={`flex items-center justify-between rounded-lg p-2 ${
+                <div className={`flex items-center justify-between rounded-lg p-1.5 sm:p-2 ${
                   theme === 'dark' ? 'bg-gray-700/70' : 'bg-white/70'
                 }`}>
                   <div className="flex items-center">
-                    <svg className={`w-4 h-4 mr-2 ${
+                    <svg className={`w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 ${
                       theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
                     }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -1043,17 +1043,17 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
                       theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
                     }`}>Distance</span>
                   </div>
-                  <span className={`text-sm font-bold ${
+                  <span className={`text-xs sm:text-sm font-bold ${
                     theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
                   }`}>{formatDistance(routeInfo.distance)}</span>
                 </div>
 
                 {/* ETA */}
-                <div className={`flex items-center justify-between rounded-lg p-2 ${
+                <div className={`flex items-center justify-between rounded-lg p-1.5 sm:p-2 ${
                   theme === 'dark' ? 'bg-gray-700/70' : 'bg-white/70'
                 }`}>
                   <div className="flex items-center">
-                    <svg className={`w-4 h-4 mr-2 ${
+                    <svg className={`w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 ${
                       theme === 'dark' ? 'text-green-400' : 'text-green-600'
                     }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1062,17 +1062,17 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
                       theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
                     }`}>ETA</span>
                   </div>
-                  <span className={`text-sm font-bold ${
+                  <span className={`text-xs sm:text-sm font-bold ${
                     theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
                   }`}>{routeInfo.eta.toFixed(0)} min</span>
                 </div>
 
                 {/* Speed */}
-                <div className={`flex items-center justify-between rounded-lg p-2 ${
+                <div className={`flex items-center justify-between rounded-lg p-1.5 sm:p-2 ${
                   theme === 'dark' ? 'bg-gray-700/70' : 'bg-white/70'
                 }`}>
                   <div className="flex items-center">
-                    <svg className={`w-4 h-4 mr-2 ${
+                    <svg className={`w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 ${
                       theme === 'dark' ? 'text-orange-400' : 'text-orange-600'
                     }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -1081,7 +1081,7 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
                       theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
                     }`}>Avg Speed</span>
                   </div>
-                  <span className={`text-sm font-bold ${
+                  <span className={`text-xs sm:text-sm font-bold ${
                     theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
                   }`}>{calculateSpeed(routeInfo.distance, routeInfo.eta)} kph</span>
                 </div>
@@ -1089,7 +1089,7 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
             </div>
           )}
           
-          {/* Clear route button */}
+          {/* Clear route button - Responsive positioning */}
           {(startPoint || endPoint) && (
             <button
               onClick={() => {
@@ -1110,7 +1110,7 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
                   endMarkerRef.current = null;
                 }
               }}
-              className={`absolute top-4 left-4 px-3 py-1 rounded shadow-lg z-[1000] transition-colors duration-200 ${
+              className={`absolute top-2 sm:top-4 left-2 sm:left-4 px-2 sm:px-3 py-1 rounded shadow-lg z-[1000] transition-colors duration-200 text-xs sm:text-sm ${
                 theme === 'dark' 
                   ? 'bg-red-600 hover:bg-red-700 text-white' 
                   : 'bg-red-500 hover:bg-red-600 text-white'

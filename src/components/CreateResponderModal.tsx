@@ -132,23 +132,23 @@ export const CreateResponderModal: React.FC<CreateResponderModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50 p-2 sm:p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-100">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-sm sm:max-w-md transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto">
         {/* Header with Logo and Title */}
-        <div className="flex flex-col items-center pt-8 pb-6 px-8">
-          <div className="flex items-center justify-center w-20 h-20 rounded-2xl mb-4 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30">
-            <UserPlus className="w-10 h-10 text-green-600 dark:text-green-400" />
+        <div className="flex flex-col items-center pt-6 sm:pt-8 pb-4 sm:pb-6 px-4 sm:px-8">
+          <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl mb-3 sm:mb-4 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30">
+            <UserPlus className="w-8 h-8 sm:w-10 sm:h-10 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Create Responder</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-1">Create Responder</h1>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center">
             Add a new responder to the SeguRuta system
           </p>
           <button
             onClick={handleClose}
             disabled={isLoading}
-            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors duration-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+            className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors duration-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
@@ -156,19 +156,19 @@ export const CreateResponderModal: React.FC<CreateResponderModalProps> = ({
         
         {/* Error Message */}
         {error && (
-          <div className="mx-8 mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-            <p className="text-red-600 dark:text-red-400 text-sm text-center">{error}</p>
+          <div className="mx-4 sm:mx-8 mb-3 sm:mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <p className="text-red-600 dark:text-red-400 text-xs sm:text-sm text-center">{error}</p>
           </div>
         )}
 
         {/* Success Message */}
         {successMessage && (
-          <div className="mx-8 mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-            <p className="text-green-600 dark:text-green-400 text-sm text-center">{successMessage}</p>
+          <div className="mx-4 sm:mx-8 mb-3 sm:mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+            <p className="text-green-600 dark:text-green-400 text-xs sm:text-sm text-center">{successMessage}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-5">
+        <form onSubmit={handleSubmit} className="px-4 sm:px-8 pb-6 sm:pb-8 space-y-4 sm:space-y-5">
           {/* Email Field */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

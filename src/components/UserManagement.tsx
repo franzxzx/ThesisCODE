@@ -108,13 +108,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-2 sm:p-4">
       <div className={`
         ${theme === 'dark' 
           ? 'bg-gray-800 border-gray-700 shadow-2xl shadow-black/50' 
           : 'bg-white border-gray-200 shadow-2xl shadow-black/20'
         } 
-        rounded-2xl border w-full max-w-md mx-auto transform transition-all duration-300 ease-out
+        rounded-xl sm:rounded-2xl border w-full max-w-sm sm:max-w-md mx-auto transform transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto
       `}>
         {/* Header */}
         <div className={`
@@ -122,28 +122,28 @@ const UserManagement: React.FC<UserManagementProps> = ({ isOpen, onClose }) => {
             ? 'bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-gray-700' 
             : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-gray-200'
           } 
-          px-8 py-6 rounded-t-2xl border-b flex items-center justify-between
+          px-4 sm:px-8 py-4 sm:py-6 rounded-t-xl sm:rounded-t-2xl border-b flex items-center justify-between
         `}>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <div className={`
               ${theme === 'dark' 
                 ? 'bg-blue-600 text-white' 
                 : 'bg-blue-600 text-white'
               } 
-              p-2.5 rounded-xl shadow-lg
+              p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-lg
             `}>
-              <UserPlus size={24} />
+              <UserPlus size={20} className="sm:w-6 sm:h-6" />
             </div>
             <div>
               <h2 className={`
                 ${theme === 'dark' ? 'text-white' : 'text-gray-900'} 
-                text-xl font-bold tracking-tight
+                text-lg sm:text-xl font-bold tracking-tight
               `}>
                 Create Responder Account
               </h2>
               <p className={`
                 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} 
-                text-sm font-medium
+                text-xs sm:text-sm font-medium
               `}>
                 Add a new responder to the system
               </p>
@@ -156,15 +156,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ isOpen, onClose }) => {
                 ? 'text-gray-400 hover:text-white hover:bg-gray-700' 
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
               } 
-              p-2 rounded-xl transition-all duration-200 hover:scale-105
+              p-2 rounded-lg sm:rounded-xl transition-all duration-200 hover:scale-105
             `}
           >
-            <X size={20} />
+            <X size={18} className="sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="px-8 py-6">
+        <div className="px-4 sm:px-8 py-4 sm:py-6">
           {/* Error Message */}
           {error && (
             <div className={`
