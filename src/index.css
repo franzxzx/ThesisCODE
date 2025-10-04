@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for road popups */
+.road-popup-container .leaflet-popup-content-wrapper {
+  @apply rounded-xl shadow-lg border-0;
+}
+
+.road-popup-container .leaflet-popup-content {
+  @apply m-0 p-4;
+}
+
+.road-popup-container .leaflet-popup-tip {
+  @apply shadow-lg;
+}
