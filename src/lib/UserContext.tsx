@@ -190,14 +190,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(null);
       setProfile(null);
       
-      // Force reload to ensure clean state
-      window.location.reload();
+      // Redirect to public page instead of reloading to prevent 404 errors
+      window.location.href = '/public';
     } catch (error) {
       console.warn('Logout error:', error);
       // Clear local state even if logout fails
       setSession(null);
       setProfile(null);
-      window.location.reload();
+      // Redirect to public page instead of reloading to prevent 404 errors
+      window.location.href = '/public';
     }
   }, []);
 

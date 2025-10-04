@@ -9,18 +9,16 @@ import { ProtectedRoute } from './routes/ProtectedRoute';
 import { ThemeProvider } from './lib/ThemeContext';
 import { UserProvider } from './lib/UserContext';
 import { useUser } from './hooks/useUser';
-import { supabase } from './lib/supabase';
 
 function AdminLayout() {
   const [activeAdminTab, setActiveAdminTab] = useState<'map' | 'users'>('map');
+  const { logout } = useUser();
 
   return (
     <div className="flex flex-row min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Navigation
         isAuthenticated={true}
-        onLogoutClick={async () => {
-          await supabase.auth.signOut();
-        }}
+        onLogoutClick={logout}
         onTabChange={(tab) => setActiveAdminTab(tab as 'map' | 'users')}
         activeTab={activeAdminTab}
       />
@@ -48,13 +46,13 @@ function AdminLayout() {
 }
 
 function ResponderLayout() {
+  const { logout } = useUser();
+
   return (
     <div className="flex flex-row min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Navigation
         isAuthenticated={true}
-        onLogoutClick={async () => {
-          await supabase.auth.signOut();
-        }}
+        onLogoutClick={logout}
       />
       <main className="flex-1 pt-16 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         <ResponderPage />
