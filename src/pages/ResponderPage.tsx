@@ -7,7 +7,7 @@ import { useRealTimeRoadStatus } from '../hooks/useRealTimeRoadStatus';
 
 export const ResponderPage: React.FC = () => {
   const { logout, canUseRouting } = useUser();
-  const [routingEnabled, setRoutingEnabled] = useState(canUseRouting);
+  const [routingEnabled, setRoutingEnabled] = useState(false); // Changed from canUseRouting to false
   const [tallVehicleRouting, setTallVehicleRouting] = useState(false);
   const { roadStatusUpdates, loading, error, refreshRoadStatus } = useRealTimeRoadStatus();
 

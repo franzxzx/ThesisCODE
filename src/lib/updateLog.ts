@@ -7,6 +7,8 @@ export interface RoadStatusUpdate {
   status: 'passable' | 'restricted' | 'blocked';
   updated_at: string;
   updated_by_email: string;
+  coordinates?: [number, number][];
+  previous_status?: string;
 }
 
 const STORAGE_KEY = 'road_status_updates';
@@ -42,12 +44,19 @@ const storeUpdate = (update: Omit<RoadStatusUpdate, 'id'>) => {
 export const logUpdate = async (
   segmentId: string,
   status: 'passable' | 'restricted' | 'blocked',
-  roadName: string
+  roadName: string,
+  coordinates?: [number, number][]
 ): Promise<void> => {
+  // Get previous status for tracking changes
+  const latestStatuses = await getLatestStatusBySegment();
+  const previousStatus = latestStatuses[segmentId]?.status;
+  
   const updateData = {
     segment_id: segmentId,
     road_name: roadName,
     status,
+    previous_status: previousStatus,
+    coordinates,
     updated_at: new Date().toISOString(),
     updated_by_email: 'anonymous@example.com', // This should be replaced with actual user email
   };
@@ -114,13 +123,44 @@ const getLatestStatusBySegmentLocal = (): Record<string, RoadStatusUpdate> => {
 };
 
 // Function to query updates with filters
-export const queryUpdates = (
+export const queryUpdates = async (
   timeframe?: { start: Date; end: Date },
-  statuses?: ('passable' | 'restricted' | 'blocked')[]
-): RoadStatusUpdate[] => {
-  const updates = getStoredUpdates();
+  statuses?: ('passable' | 'restricted' | 'blocked')[],
+  includeAllRoads: boolean = false
+): Promise<RoadStatusUpdate[]> => {
+  let updates: RoadStatusUpdate[] = [];
   
-  return updates.filter(update => {
+  try {
+    // Try to fetch from database first
+    let query = supabase
+      .from('road_status_updates')
+      .select('*');
+    
+    if (timeframe) {
+      query = query
+        .gte('updated_at', timeframe.start.toISOString())
+        .lte('updated_at', timeframe.end.toISOString());
+    }
+    
+    if (statuses && statuses.length > 0) {
+      query = query.in('status', statuses);
+    }
+    
+    const { data, error } = await query;
+    
+    if (!error && data) {
+      updates = data as RoadStatusUpdate[];
+    } else {
+      console.warn('Database query failed, using localStorage fallback:', error);
+      updates = getStoredUpdates();
+    }
+  } catch (error) {
+    console.warn('Error querying database, using localStorage fallback:', error);
+    updates = getStoredUpdates();
+  }
+  
+  // Apply filters to localStorage data
+  let filteredUpdates = updates.filter(update => {
     const updateDate = new Date(update.updated_at);
     
     if (timeframe) {
@@ -135,6 +175,21 @@ export const queryUpdates = (
     
     return true;
   });
+  
+  // If includeAllRoads is true, ensure we have at least one entry for each road segment
+  if (includeAllRoads) {
+    const latestBySegment = await getLatestStatusBySegment();
+    const segmentsInFiltered = new Set(filteredUpdates.map(u => u.segment_id));
+    
+    // Add missing segments
+    Object.values(latestBySegment).forEach(update => {
+      if (!segmentsInFiltered.has(update.segment_id)) {
+        filteredUpdates.push(update);
+      }
+    });
+  }
+  
+  return filteredUpdates;
 };
 
 // Function to clear stored updates

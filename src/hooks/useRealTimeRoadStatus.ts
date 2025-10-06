@@ -14,11 +14,15 @@ export const useRealTimeRoadStatus = () => {
   const [roadStatusUpdates, setRoadStatusUpdates] = useState<RoadStatusUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Fetch initial road status data
-  const fetchRoadStatus = async () => {
+  const fetchRoadStatus = async (isReconnection = false) => {
     try {
-      setLoading(true);
+      // Only show loading state on initial load, not on reconnections
+      if (!isReconnection) {
+        setLoading(true);
+      }
       const { data, error } = await supabase.rpc('get_latest_road_status');
       
       if (error) {
@@ -34,66 +38,116 @@ export const useRealTimeRoadStatus = () => {
       setRoadStatusUpdates([]);
       setError(null);
     } finally {
-      setLoading(false);
+      if (!isReconnection) {
+        setLoading(false);
+      }
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+        setLoading(false);
+      }
     }
   };
 
   // Set up real-time subscription
   useEffect(() => {
+    let subscription: any = null;
+    let intervalId: NodeJS.Timeout | null = null;
+    let reconnectTimeoutId: NodeJS.Timeout | null = null;
+    let isComponentMounted = true;
+
     // Initial fetch
     fetchRoadStatus();
 
-    // Create a unique channel name to avoid conflicts
-    const channelName = `road_status_updates_${Date.now()}`;
-    
-    // Subscribe to real-time changes with better error handling
-    const subscription = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'road_status_updates'
-        },
-        (payload) => {
-          console.log('Real-time road status update received:', payload);
+    const setupSubscription = () => {
+      if (!isComponentMounted) return;
+
+      // Create a unique channel name to avoid conflicts
+      const channelName = `road_status_updates_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Subscribe to real-time changes with better error handling
+      subscription = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'road_status_updates'
+          },
+          (payload) => {
+            if (!isComponentMounted) return;
+            console.log('Real-time road status update received:', payload);
+            
+            // Only refetch if this is an actual data change, not a reconnection
+            if (payload.eventType !== 'SYSTEM') {
+              fetchRoadStatus(true); // Pass true to indicate this is a reconnection fetch
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (!isComponentMounted) return;
+          console.log('Subscription status:', status);
           
-          // Refetch all data to ensure consistency
-          fetchRoadStatus();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to road status updates');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.warn('Channel error - retrying subscription in 5 seconds');
-          // Retry subscription after a delay
-          setTimeout(() => {
-            fetchRoadStatus();
-          }, 5000);
-        } else if (status === 'TIMED_OUT') {
-          console.warn('Subscription timed out - retrying');
-          fetchRoadStatus();
-        }
-      });
+          if (status === 'SUBSCRIBED') {
+            console.log('Successfully subscribed to road status updates');
+            // Clear any pending reconnection attempts
+            if (reconnectTimeoutId) {
+              clearTimeout(reconnectTimeoutId);
+              reconnectTimeoutId = null;
+            }
+          } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+            console.warn(`Subscription ${status} - attempting reconnection in 3 seconds`);
+            // Attempt to reconnect after a delay
+            reconnectTimeoutId = setTimeout(() => {
+              if (isComponentMounted) {
+                console.log('Attempting to reconnect subscription...');
+                if (subscription) {
+                  subscription.unsubscribe();
+                }
+                setupSubscription();
+              }
+            }, 3000);
+          } else if (status === 'TIMED_OUT') {
+            console.warn('Subscription timed out - reconnecting immediately');
+            if (subscription) {
+              subscription.unsubscribe();
+            }
+            setupSubscription();
+          }
+        });
+    };
+
+    // Initial subscription setup
+    setupSubscription();
 
     // Set up periodic refresh as fallback (every 30 seconds)
-    const intervalId = setInterval(() => {
-      fetchRoadStatus();
+    intervalId = setInterval(() => {
+      if (isComponentMounted) {
+        fetchRoadStatus(true); // Pass true to indicate this is a background refresh
+      }
     }, 30000);
 
     // Cleanup subscription and interval on unmount
     return () => {
-      subscription.unsubscribe();
-      clearInterval(intervalId);
+      isComponentMounted = false;
+      
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+      
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      
+      if (reconnectTimeoutId) {
+        clearTimeout(reconnectTimeoutId);
+      }
     };
   }, []);
 
   // Manual refresh function
   const refreshRoadStatus = () => {
-    fetchRoadStatus();
+    fetchRoadStatus(true); // Manual refresh should not show loading state
   };
 
   return {

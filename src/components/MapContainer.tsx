@@ -389,30 +389,33 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
     
     if (roadStatusUpdates.length === 0 || roadSegments.length === 0) return;
 
-    // Create a map of latest statuses from real-time updates
-    const latestStatusMap: Record<string, RoadStatus> = {};
+    // Create a map of latest statuses from real-time updates (most recent wins)
+    const latestStatusMap: Record<string, { status: RoadStatus, timestamp: string }> = {};
     roadStatusUpdates.forEach(update => {
-      latestStatusMap[update.segment_id] = update.status;
+      const existing = latestStatusMap[update.segment_id];
+      // Keep the most recent update based on timestamp
+      if (!existing || new Date(update.updated_at) > new Date(existing.timestamp)) {
+        latestStatusMap[update.segment_id] = {
+          status: update.status,
+          timestamp: update.updated_at
+        };
+      }
     });
 
     console.log('Latest status map:', latestStatusMap);
 
     // Update road segments with latest statuses, but respect local changes
     const updatedSegments = roadSegments.map(segment => {
-      const latestStatus = latestStatusMap[segment.id];
+      const latestUpdate = latestStatusMap[segment.id];
       
       // Skip updating if this segment was recently updated locally
       if (locallyUpdatedSegments.current.has(segment.id)) {
-        // Clear the local update flag after a short delay to allow future real-time updates
-        setTimeout(() => {
-          locallyUpdatedSegments.current.delete(segment.id);
-        }, 2000);
         return segment;
       }
       
-      if (latestStatus && latestStatus !== segment.status) {
-        console.log(`Updating segment ${segment.id} from ${segment.status} to ${latestStatus}`);
-        return { ...segment, status: latestStatus };
+      if (latestUpdate && latestUpdate.status !== segment.status) {
+        console.log(`Updating segment ${segment.id} from ${segment.status} to ${latestUpdate.status}`);
+        return { ...segment, status: latestUpdate.status };
       }
       return segment;
     });
@@ -615,7 +618,8 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
         weight = 12; // Increased for better clickability
         opacity = 0.9;
       }
-      
+
+      // No visual effects - instant color changes only
       const polyline = L.polyline(coords, {
         color,
         weight,
@@ -812,38 +816,51 @@ export const MapContainer: React.FC<MapContainerProps> = React.memo(({
   }, [startPoint, endPoint, routingEnabled]);
 
   // Handle segment status selection
-  const handleSegmentStatusSelect = (newStatus: 'passable' | 'restricted' | 'blocked') => {
+  const handleSegmentStatusSelect = async (newStatus: 'passable' | 'restricted' | 'blocked') => {
     if (!segmentSelector.segment) return;
     
     const segment = segmentSelector.segment;
+    const originalStatus = segment.status;
     
     // Mark this segment as locally updated to prevent real-time override
     locallyUpdatedSegments.current.add(segment.id);
     
-    // Update state immediately for consistency
+    // Update state immediately for instant color change
     const updatedSegments = roadSegments.map(s =>
       s.id === segment.id ? { ...s, status: newStatus } : s
     );
     setRoadSegments(updatedSegments);
     
-    // Show notification for immediate feedback
-    const statusLabels = {
-      'passable': 'Open (Green)',
-      'restricted': 'Restricted (Yellow)', 
-      'blocked': 'Blocked (Red)'
-    };
-    showNotification(
-      `Road status updated to: ${statusLabels[newStatus]}`, 
-      'success'
-    );
-    
-    // Log the update asynchronously
-    logUpdate(segment.id, newStatus, segment.properties?.name || 'Unknown Road').catch(error => {
-      console.warn('Failed to log update:', error);
-    });
-    
-    // Close the selector
+    // Close the selector immediately for better UX
     setSegmentSelector(prev => ({ ...prev, isOpen: false }));
+    
+    try {
+      // Log the update asynchronously
+      await logUpdate(segment.id, newStatus, segment.properties?.name || 'Unknown Road', segment.coordinates);
+      
+      // Clear local update flag after successful sync
+      setTimeout(() => {
+        locallyUpdatedSegments.current.delete(segment.id);
+      }, 1000);
+      
+    } catch (error) {
+      console.warn('Failed to sync road status update:', error);
+      
+      // Error handling: Rollback the optimistic update
+      const rolledBackSegments = roadSegments.map(s =>
+        s.id === segment.id ? { ...s, status: originalStatus } : s
+      );
+      setRoadSegments(rolledBackSegments);
+      
+      // Show error notification
+      showNotification(
+        `Failed to update road status. Changes reverted. Please try again.`, 
+        'error'
+      );
+      
+      // Remove from local update tracking to allow real-time updates
+      locallyUpdatedSegments.current.delete(segment.id);
+    }
   };
 
   // Handle closing the segment selector

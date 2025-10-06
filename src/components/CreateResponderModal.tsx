@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, UserPlus, Loader2, Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 interface CreateResponderModalProps {
@@ -12,6 +13,7 @@ export const CreateResponderModal: React.FC<CreateResponderModalProps> = ({
   onClose, 
   onSuccess 
 }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = React.useState({
     email: '',
     password: '',
@@ -40,8 +42,19 @@ export const CreateResponderModal: React.FC<CreateResponderModalProps> = ({
       setError('Please enter a valid email address');
       return false;
     }
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return false;
+    }
+    // Add stronger password requirements to avoid common passwords
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      return false;
+    }
+    // Check for common weak passwords
+    const commonPasswords = ['password', '12345678', 'qwerty123', 'admin123', 'user1234'];
+    if (commonPasswords.some(common => formData.password.toLowerCase().includes(common.toLowerCase()))) {
+      setError('Please choose a stronger password that is not commonly used');
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
@@ -94,10 +107,12 @@ export const CreateResponderModal: React.FC<CreateResponderModalProps> = ({
         confirmPassword: ''
       });
 
-      // Call success callback and close modal after delay
+      // Call success callback and close modal after delay, then redirect
       setTimeout(() => {
         onSuccess?.();
         handleClose();
+        // Automatically redirect to ResponderPage
+        navigate('/responder');
       }, 1500);
 
     } catch (error: any) {
@@ -198,7 +213,7 @@ export const CreateResponderModal: React.FC<CreateResponderModalProps> = ({
               disabled={isLoading}
               autoComplete="new-password"
               className="w-full pl-12 pr-12 py-4 bg-gray-50 dark:bg-gray-700 border-0 rounded-2xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-gray-600 transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-              placeholder="Password (min. 6 characters)"
+              placeholder="Password (min. 8 characters, uppercase, lowercase, number)"
               required
             />
             <button
@@ -209,6 +224,11 @@ export const CreateResponderModal: React.FC<CreateResponderModalProps> = ({
             >
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
+          </div>
+          
+          {/* Password Requirements Hint */}
+          <div className="text-xs text-gray-500 dark:text-gray-400 px-1">
+            Password must be at least 8 characters with uppercase, lowercase, and number. Avoid common passwords.
           </div>
 
           {/* Confirm Password Field */}

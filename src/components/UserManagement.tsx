@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { UserPlus, X, AlertCircle, CheckCircle, Eye, EyeOff, Shield } from 'lucide-react';
 import { UserContext } from '../lib/UserContext';
@@ -10,6 +11,7 @@ interface UserManagementProps {
 }
 
 const UserManagement: React.FC<UserManagementProps> = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -90,6 +92,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ isOpen, onClose }) => {
       setTimeout(() => {
         setSuccess(false);
         onClose();
+        // Automatically redirect to ResponderPage
+        navigate('/responder');
       }, 2500);
 
     } catch (error: any) {
